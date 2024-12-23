@@ -1,22 +1,24 @@
 import java.text.SimpleDateFormat;
 import java.util.Date; // Mengimpor hanya pustaka yang dibutuhkan
 
+// Superclass Tanaman
 class Tanaman {
-    protected String nama;
+    protected String nama; // Syarat 3: Inheritance - Atribut diwarisi oleh subclass
     protected int levelAir;
     protected int levelNutrisi;
     protected Date terakhirDiperiksa;
 
-    // Konstruktor
+    // Konstruktor superclass
     public Tanaman(String nama, int levelAir, int levelNutrisi) {
-        this.nama = nama;
+        this.nama = nama; // Syarat 3: Konstruktor superclass dipanggil oleh subclass
         this.levelAir = levelAir;
         this.levelNutrisi = levelNutrisi;
-        this.terakhirDiperiksa = new Date(); // Atur waktu saat ini
+        this.terakhirDiperiksa = new Date(); // Syarat 5: Manipulasi Date
     }
 
-    // Metode untuk menampilkan informasi tanaman
-    public void tampilkanInformasi() {
+    // Menampilkan informasi tanaman
+    public void tampilkanInformasi() { 
+        // Syarat 5: Format tanggal menggunakan SimpleDateFormat
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         System.out.println("Nama Tanaman: " + nama);
         System.out.println("Level Air: " + levelAir + "%");

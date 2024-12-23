@@ -8,22 +8,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+// Interface untuk perawatan tanaman
 interface PerawatanTanaman {
-    void pantauTanaman();
-    void rawatTanaman();
+    void pantauTanaman(); // Memantau kondisi tanaman
+    void rawatTanaman();  // Merawat tanaman sesuai kebutuhan
 }
-
 public class SistemHidroponik {
     private static final String JDBC_URL = "jdbc:mysql://localhost:3306/hidroponik_db";
     private static final String PENGGUNA = "root";
     private static final String KATA_SANDI = "";
 
-    // Fungsi untuk menambah tanaman baru ke database
+    // Menambahkan tanaman baru ke database
     private static void tambahTanaman(int id, String nama, int levelAir, int levelNutrisi) {
         try (Connection conn = DriverManager.getConnection(JDBC_URL, PENGGUNA, KATA_SANDI)) {
             String query = "INSERT INTO tanaman (id, nama, level_air, level_nutrisi) VALUES (?, ?, ?, ?)";
             PreparedStatement stmt = conn.prepareStatement(query);
-            stmt.setInt(1, id); // Masukkan ID secara manual
+            stmt.setInt(1, id);
             stmt.setString(2, nama);
             stmt.setInt(3, levelAir);
             stmt.setInt(4, levelNutrisi);
@@ -34,22 +34,24 @@ public class SistemHidroponik {
         }
     }
 
+    
 
-    // Fungsi untuk memuat tanaman dari database ke dalam tanamanList
+    // Memuat data dari database ke list tanaman
     private static void muatDataDariDatabase(List<TanamanHidroponik> tanamanList) {
         try (Connection conn = DriverManager.getConnection(JDBC_URL, PENGGUNA, KATA_SANDI)) {
             String query = "SELECT * FROM tanaman";
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
-            
-            tanamanList.clear(); // Menghapus data lama di list
+
+            tanamanList.clear(); // Membersihkan data lama
             while (rs.next()) {
+                // Syarat 7: Menggunakan collection framework untuk menyimpan data dari database
                 tanamanList.add(new TanamanHidroponik(
                         rs.getString("nama"),
                         rs.getInt("level_air"),
                         rs.getInt("level_nutrisi"),
-                        70,  // levelAirIdeal bisa diubah sesuai kebutuhan
-                        80   // levelNutrisiIdeal bisa diubah sesuai kebutuhan
+                        70, // levelAirIdeal default
+                        80  // levelNutrisiIdeal default
                 ));
             }
         } catch (SQLException e) {
@@ -57,32 +59,8 @@ public class SistemHidroponik {
         }
     }
 
-    // Fungsi untuk menampilkan tanaman dari database
-private static void tampilkanTanaman() {
-    try (Connection conn = DriverManager.getConnection(JDBC_URL, PENGGUNA, KATA_SANDI)) {
-        String query = "SELECT * FROM tanaman";
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(query);
-        boolean adaData = false; // Flag untuk mengecek apakah ada data
-
-        while (rs.next()) {
-            adaData = true; // Jika ada data, ubah flag menjadi true
-            System.out.println("ID: " + rs.getInt("id") + ", Nama: " + rs.getString("nama") +
-                    ", Level Air: " + rs.getInt("level_air") + "%" +
-                    ", Level Nutrisi: " + rs.getInt("level_nutrisi") + "%");
-        }
-
-        if (!adaData) { // Jika tidak ada data
-            System.out.println("Tidak ada tanaman dalam database.");
-        }
-    } catch (SQLException e) {
-        System.err.println("Kesalahan saat menampilkan tanaman: " + e.getMessage());
-    }
-}
-
-
-    // Fungsi untuk memperbarui tanaman di database
-    private static void perbaruiTanaman(int id, int levelAir, int levelNutrisi) {
+     // Fungsi untuk memperbarui tanaman di database
+     private static void perbaruiTanaman(int id, int levelAir, int levelNutrisi) {
         try (Connection conn = DriverManager.getConnection(JDBC_URL, PENGGUNA, KATA_SANDI)) {
             String query = "UPDATE tanaman SET level_air = ?, level_nutrisi = ? WHERE id = ?";
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -109,12 +87,36 @@ private static void tampilkanTanaman() {
         }
     }
 
+    // Menampilkan tanaman di database
+    private static void tampilkanTanaman() {
+        try (Connection conn = DriverManager.getConnection(JDBC_URL, PENGGUNA, KATA_SANDI)) {
+            String query = "SELECT * FROM tanaman";
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            boolean adaData = false;
+
+            while (rs.next()) {
+                // Syarat 8: Mengakses dan membaca data dari database
+                adaData = true;
+                System.out.println("ID: " + rs.getInt("id") + ", Nama: " + rs.getString("nama") +
+                        ", Level Air: " + rs.getInt("level_air") + "%" +
+                        ", Level Nutrisi: " + rs.getInt("level_nutrisi") + "%");
+            }
+
+            if (!adaData) {
+                System.out.println("Tidak ada tanaman dalam database.");
+            }
+        } catch (SQLException e) {
+            System.err.println("Kesalahan saat menampilkan tanaman: " + e.getMessage());
+        }
+    }
+
+    // Program utama
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        List<TanamanHidroponik> tanamanList = new ArrayList<>();
+        List<TanamanHidroponik> tanamanList = new ArrayList<>(); // Syarat 7: Menggunakan ArrayList
 
-        // Memuat tanaman dari database
-        muatDataDariDatabase(tanamanList);
+        muatDataDariDatabase(tanamanList); // Memuat data awal
 
         int pilihan;
         do {
@@ -132,43 +134,36 @@ private static void tampilkanTanaman() {
 
             switch (pilihan) {
                 case 1:
-                    // Memuat ulang data tanaman dari database setiap kali dipilih
-                    muatDataDariDatabase(tanamanList);
+                    // Syarat 4: Menggunakan perulangan untuk memproses semua tanaman
                     for (TanamanHidroponik tanaman : tanamanList) {
                         tanaman.pantauTanaman();
                     }
                     break;
                 case 2:
-                    // Memuat ulang data tanaman dari database setiap kali dipilih
-                    muatDataDariDatabase(tanamanList);
+                    // Melakukan perawatan untuk semua tanaman
                     for (TanamanHidroponik tanaman : tanamanList) {
                         tanaman.rawatTanaman();
                     }
+                    // Memuat ulang data setelah perubahan
+                    muatDataDariDatabase(tanamanList);
                     break;
                 case 3:
-                    // Memuat ulang data tanaman dari database setiap kali dipilih
-                    muatDataDariDatabase(tanamanList);
-                    if (tanamanList.isEmpty()) { // Periksa apakah tanamanList kosong
-                        System.out.println("Tidak ada tanaman yang dapat ditampilkan.");
-                    } else {
-                        for (TanamanHidroponik tanaman : tanamanList) {
-                            tanaman.tampilkanInformasi();
-                        }
+                    for (TanamanHidroponik tanaman : tanamanList) {
+                        tanaman.tampilkanInformasi();
                     }
                     break;
                 case 4:
                     System.out.print("Masukkan ID tanaman: ");
                     int id = scanner.nextInt();
-                    scanner.nextLine(); // Untuk menangani newline setelah nextInt
+                    scanner.nextLine();
                     System.out.print("Masukkan nama tanaman: ");
                     String nama = scanner.nextLine();
                     System.out.print("Masukkan level air: ");
                     int levelAir = scanner.nextInt();
                     System.out.print("Masukkan level nutrisi: ");
                     int levelNutrisi = scanner.nextInt();
-                    tambahTanaman(id, nama, levelAir, levelNutrisi);
-                    // Memuat ulang data tanaman setelah menambah tanaman baru
-                    muatDataDariDatabase(tanamanList);
+                    tambahTanaman(id, nama, levelAir, levelNutrisi); // Syarat 8: Menambah data ke database
+                    muatDataDariDatabase(tanamanList); // Memperbarui data lokal
                     break;
                 case 5:
                     tampilkanTanaman();
@@ -199,6 +194,6 @@ private static void tampilkanTanaman() {
             }
         } while (pilihan != 0);
 
-        scanner.close(); // Menutup scanner
+        scanner.close();
     }
 }
